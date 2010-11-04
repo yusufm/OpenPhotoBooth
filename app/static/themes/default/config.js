@@ -32,6 +32,7 @@ OPBConfig = {
 		++OPBSkin.captured;
 		$( '#photo' + OPBSkin.captured ).attr( 'src', OPBThumbPath + json.thumbnail );
 		if( OPBSkin.captured >= 4 ) {
+			OpenPhotoBooth.printSet();
 			OpenPhotoBooth.closeSet();
 			OpenPhotoBooth.openSet();
 			$( "#countdown" ).html( "All Done! Thanks!" );

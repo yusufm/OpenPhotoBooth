@@ -78,6 +78,17 @@ OpenPhotoBooth = {
 				success: function ( data ) { Hook.call( 'core.postCloseSet', [ data ] ); }
 		  }
 		);
-	}
+	},
 
+	printSet: function () {
+		jQuery.ajax(
+			{
+				url: "/set/print",
+				dataType: 'json',
+				cache: false,
+				async: false,
+				data: {}
+		  }
+		);
+	}
 }
