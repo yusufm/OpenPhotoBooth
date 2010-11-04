@@ -65,6 +65,17 @@ OpenPhotoBooth = {
 				data: {}
 		  }
 		);
-	}
+	},
 
+	printSet: function () {
+		jQuery.ajax(
+			{
+				url: "/set/print",
+				dataType: 'json',
+				cache: false,
+				async: false,
+				data: {}
+		  }
+		);
+	}
 }

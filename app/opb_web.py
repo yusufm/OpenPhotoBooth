@@ -34,6 +34,7 @@ urls = (
 	'/set/open', 'open_set',
 	'/set/close', 'close_set',
 	'/photo', 'save_photo',
+	'/set/print', 'print_set',
   '/favicon.ico', 'favicon_serve'
 )
 
@@ -52,6 +53,7 @@ opb = {
 
 theme_render = None
 set_id = False
+set_photos = []
 
 # Sets everything required for properly rendering a theme
 def SetTheme ( theme_name ):
@@ -70,6 +72,7 @@ class main:
 class save_photo:
 	def POST( self ):
 		global set_id
+		global set_photos
 		web.header( 'Content-type', 'application/json; charset=utf-8' )
 
 		""" Save the photo data, thumbnail it and move on. """
@@ -80,6 +83,7 @@ class save_photo:
 		else:
 			filename = "NOSET_%s.jpg" % ( int( time.time() ) )
 
+		set_photos.append(filename)
 		fullsize = open( './static/photos/' + filename, 'wb' )
 		fullsize.write( base64.standard_b64decode( i.image ) )
 		fullsize.close()
@@ -90,16 +94,50 @@ class save_photo:
 		im.save( './static/thumbs/' + filename, "JPEG" )
 		return '{ "saved": true, "thumbnail": "%s" }' % ( filename )
 
+class print_set:
+	def GET ( self ):
+		global set_photos
+		self.printout( self.construct_print( 'background.jpg' ) )
+	
+	def construct_print ( self, backgroundfile ):
+		global set_id
+		global set_photos
+		background = Image.open( "./" + opb['theme_path'] + '/%s' % ( backgroundfile ) )
+		placement = open( "./" + opb['theme_path'] + '/%s.cfg' % ( backgroundfile ) )
+		for count, line in enumerate( placement ):
+			pos, size = eval( line )
+			i1 = set_photos[ (count % len( set_photos ) )]
+			background.paste( Image.open('./static/photos/' + i1).resize(size), pos )
+		if False != set_id:
+                        outfile = "./static/photos/%s_%s_print.jpg" % ( set_id, int( time.time() ) )
+                else:
+                        outfile = "./static/photos/NOSET_%s_print.jpg" % ( int( time.time() ) )
+		print_output = background.save( outfile )
+		return outfile
+
+	def printout( self , filename ):
+		try:
+			import win32api
+			win32api.ShellExecute ( 0, "print", filename, None, ".", 0 )
+		except ImportError:
+			# Probably not Win, try printing via lpr
+			import subprocess
+			subprocess.Popen(['lpr', filename])
+
 class open_set:
 	def GET ( self ):
 		global set_id
+		global set_photos
 		set_id = "%s" % int( time.time() )
+		set_photos = []
 		return '{ "set": "%s" }' % set_id
 
 class close_set:
 	def GET ( self ):
 		global set_id
+		global set_photos
 		set_id = False
+		set_photos = []
 		return '{ "set": false }'
 
 class favicon_serve:
